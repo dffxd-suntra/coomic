@@ -19,6 +19,7 @@
   "homepage": "https://github.com/dffxd-suntra/coomic#readme",
   "dependencies": {
     "@koa/router": "^12.0.0",
-    "koa": "^2.14.2"
+    "koa": "^2.14.2",
+    "socket.io": "^4.7.2"
   }
 }

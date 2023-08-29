@@ -2,6 +2,7 @@ const Http = require("http");
 const Koa = require('koa');
 const Router = require('@koa/router');
 const SocketIO = require("socket.io");
+const config = require("./config/config");
 
 const app = new Koa();
 const router = new Router();
@@ -17,4 +18,4 @@ app
     .use(router.routes())
     .use(router.allowedMethods());
 
-httpServer.listen(3000);
+httpServer.listen(config.port); // default 3000

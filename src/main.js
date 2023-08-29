@@ -22,7 +22,7 @@ app.use(cors({
 
 const userRouter = require("./routes/user").routes();
 
-router.use("/users", userRouter);
+router.use("/api/users", userRouter);
 
 // hold 404
 router.all("/:match(.*)", (ctx, next) => {

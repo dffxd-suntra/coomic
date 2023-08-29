@@ -6,7 +6,7 @@ module.exports = function addUser({ nickname = "机器人-" + moment().format("Y
     const stmt = db.prepare("INSERT INTO users(nickname, sex, avatar, role, status) VALUES($nickname, $sex, $avatar, $role, $status);");
     stmt.run({ nickname, sex, avatar, role, status });
 
-    let user_id;
+    let user_id = db.prepare("SELECT last_insert_rowid() as id FROM users;").get().id;
 
     for (let i in auth) {
         addUserAuth(Object.assign({ user_id }, auth[i]));

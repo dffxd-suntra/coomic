@@ -8,10 +8,10 @@ const config = {
         autoCommit: true,
         overwrite: true,
         httpOnly: true,
-        signed: false, // cookie 加密
+        signed: true, // cookie 加密
         rolling: false,
         renew: true,
-        secure: true,
+        secure: false,
         sameSite: null, /** (string) session cookie sameSite options (default null, don't set it) */
     }
 };

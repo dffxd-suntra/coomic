@@ -1,21 +1,24 @@
 const addUser = require("../method/AddUser");
 const _ = require("lodash");
-const PasswordHash = require("phpass").PasswordHash;
 const authUser = require("../method/AuthUser");
 
 module.exports.user_register = (ctx, next) => {
     // 坏的用户，不干好事，天天就想搞我的网站
-    let { nickname, username, password, sex } = ctx.request.body;
+    let { nickname, identity_type, identifier, credential, sex } = ctx.request.body;
     // 判定
     if (_.isString(nickname) && 1 <= nickname.length && nickname.length <= 20) { } else {
         ctx.throw(400);
         return;
     }
-    if (_.isString(username) && 1 <= username.length && username.length <= 20) { } else {
+    if (["username", "phone", "email"].includes(identity_type)) { } else {
         ctx.throw(400);
         return;
     }
-    if (_.isString(password) && 8 <= password.length && password.length <= 128) { } else {
+    if (_.isString(identifier) && identifier.length <= 128) { } else {
+        ctx.throw(400);
+        return;
+    }
+    if (_.isString(credential) && credential.length <= 128) { } else {
         ctx.throw(400);
         return;
     }
@@ -23,10 +26,14 @@ module.exports.user_register = (ctx, next) => {
         ctx.throw(400);
         return;
     }
-    ctx.body = addUser({ nickname, sex }, [{ identity_type: "username", identifier: username, credential: new PasswordHash().hashPassword(password) }]);
+    ctx.body = addUser({ nickname, sex }, [{ identity_type, identifier, credential }]);
 };
 
 module.exports.user_login = (ctx, next) => {
+    if(ctx.session.user_id != undefined) {
+        ctx.throw(400);
+        return;
+    }
     let { identity_type, identifier, credential } = ctx.request.body;
     // 现在仅限这三种，以后会添加oauth2的验证登陆功能
     if (["username", "phone", "email"].includes(identity_type)) { } else {
@@ -41,7 +48,27 @@ module.exports.user_login = (ctx, next) => {
         ctx.throw(400);
         return;
     }
-    ctx.body = authUser(identity_type, identifier, credential);
+    let res = authUser({ identity_type, identifier, credential, ip: ctx.ip });
+    if (res.code == 200) {
+        ctx.session.user_id = res.data.user_id;
+        ctx.session.login_date = Date.now();
+        ctx.session.socketList = [];
+    }
+    ctx.body = res;
 };
 
-module.exports.user_info = (ctx, next) => { };
+// 登出的除了用户还有使用
+module.exports.user_logout = (ctx, next) => {
+    ctx.session = null;
+};
+
+module.exports.user_info = (ctx, next) => {
+    let { user_id = ctx.session.user_id } = ctx.request.body;
+    if (_.isSafeInteger(user_id) || (_.isString(user_id) && user_id.match(/^\d+$/g) != null)) {
+        user_id = parseInt(user_id);
+    } else {
+        ctx.throw(400);
+        return;
+    }
+    ctx.body = user_id;
+};

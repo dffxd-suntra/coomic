@@ -7,7 +7,8 @@ const cors = require("@koa/cors");
 const SocketIO = require("socket.io");
 const config = require("./config/config");
 const clientip = require("koa-clientip");
-var KeyGrip = require("keygrip");
+const KeyGrip = require("keygrip");
+const initSession = require("./method/InitSession");
 
 const app = new Koa();
 const router = new Router();
@@ -24,6 +25,9 @@ app.use(cors({
     allowHeaders: "*"
 }));
 app.use(clientip());
+
+// 只有新建的session或无登陆session才会触发
+app.use(initSession());
 
 const userRouter = require("./routes/user").routes();
 

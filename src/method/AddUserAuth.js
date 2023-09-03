@@ -9,7 +9,7 @@ module.exports = function addUserAuth({ user_id = null, is_oauth2 = 0, identity_
         credential = new PasswordHash().hashPassword(credential)
     }
     // 不止插入
-    const stmt = db.prepare("INSERT INTO user_auths(user_id, is_oauth2, identity_type, identifier, credential, verified) VALUES($user_id, $is_oauth2, $identity_type, $identifier, $credential, $verified);");
+    let stmt = db.prepare("INSERT INTO user_auths(user_id, is_oauth2, identity_type, identifier, credential, verified) VALUES($user_id, $is_oauth2, $identity_type, $identifier, $credential, $verified);");
     stmt.run({ user_id, is_oauth2, identity_type, identifier, credential, verified });
     return { code: 200, msg: "添加成功" };
 }

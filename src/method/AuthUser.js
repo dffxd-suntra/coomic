@@ -6,16 +6,15 @@ function updateUserLogin(user_id, ip) {
 }
 
 module.exports = function authUser({ identity_type, identifier, credential, ip = null } = {}) {
-    let { user_id, credential: dbcredential, verified } = db.prepare("SELECT user_id, credential, verified AS num FROM user_auths WHERE identity_type = $identity_type AND identifier = $identifier;").get({ identity_type, identifier }) || {};
+    let { user_id, credential: dbcredential, verified } = db.prepare("SELECT user_id, credential, verified FROM user_auths WHERE identity_type = $identity_type AND identifier = $identifier;").get({ identity_type, identifier }) || {};
     if (user_id == undefined) {
         return { code: 400, msg: "未找到用户" };
     }
     if (["username", "phone", "email"].includes(identity_type)) {
-        if (new PasswordHash().checkPassword(credential, dbcredential)) {
-            updateUserLogin(user_id, ip);
-            return { code: 200, msg: "登陆成功", data: { user_id } };
-        } else {
+        if (!new PasswordHash().checkPassword(credential, dbcredential)) {
             return { code: 400, msg: "用户名或密码错误" };
         }
+        updateUserLogin(user_id, ip);
+        return { code: 200, msg: "登陆成功", data: { user_id } };
     }
 }

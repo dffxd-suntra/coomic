@@ -1,6 +1,8 @@
+const config = require("../config/config");
 const addUser = require("../method/AddUser");
 const _ = require("lodash");
 const authUser = require("../method/AuthUser");
+const getUserInfo = require("../method/GetUserInfo");
 
 module.exports.user_register = (ctx, next) => {
     // 坏的用户，不干好事，天天就想搞我的网站
@@ -30,7 +32,7 @@ module.exports.user_register = (ctx, next) => {
 };
 
 module.exports.user_login = (ctx, next) => {
-    if(ctx.session.user_id != undefined) {
+    if (ctx.session.user_id != undefined) {
         ctx.throw(400);
         return;
     }
@@ -52,14 +54,17 @@ module.exports.user_login = (ctx, next) => {
     if (res.code == 200) {
         ctx.session.user_id = res.data.user_id;
         ctx.session.login_date = Date.now();
-        ctx.session.socketList = [];
+        ctx.session.is_login = true;
     }
+    let { id, nickname, sex, avatar = config.defaultAvatar, status, register_date } = getUserInfo(ctx.session.user_id);
+    res.data = { id, nickname, sex, avatar, status, register_date };
     ctx.body = res;
 };
 
 // 登出的除了用户还有使用
 module.exports.user_logout = (ctx, next) => {
-    ctx.session = null;
+    ctx.session = { isNew: true };
+    ctx.body = { code: 200, msg: "您已退出登录" };
 };
 
 module.exports.user_info = (ctx, next) => {
@@ -70,5 +75,6 @@ module.exports.user_info = (ctx, next) => {
         ctx.throw(400);
         return;
     }
-    ctx.body = user_id;
+    let { id, nickname, sex, avatar = config.defaultAvatar, status, register_date } = getUserInfo(user_id);
+    ctx.body = { id, nickname, sex, avatar, status, register_date };
 };

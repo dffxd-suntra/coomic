@@ -5,27 +5,38 @@ const authUser = require("../method/AuthUser");
 const getUserInfo = require("../method/GetUserInfo");
 
 module.exports.user_register = (ctx, next) => {
+    if(!ctx.session.permissions.register_user) {
+        ctx.response.status = 401;
+        ctx.body = { code: 401, msg: "您没有注册的权限" };
+        return;
+    }
+
     // 坏的用户，不干好事，天天就想搞我的网站
     let { nickname, identity_type, identifier, credential, sex } = ctx.request.body;
     // 判定
     if (_.isString(nickname) && 1 <= nickname.length && nickname.length <= 20) { } else {
-        ctx.throw(400);
+        ctx.response.status = 400;
+        ctx.body = { code: 400, msg: "昵称不符合规范" };
         return;
     }
     if (["username", "phone", "email"].includes(identity_type)) { } else {
-        ctx.throw(400);
+        ctx.response.status = 400;
+        ctx.body = { code: 400, msg: "验证方式不符合规范" };
         return;
     }
     if (_.isString(identifier) && identifier.length <= 128) { } else {
-        ctx.throw(400);
+        ctx.response.status = 400;
+        ctx.body = { code: 400, msg: "标识不符合规范" };
         return;
     }
     if (_.isString(credential) && credential.length <= 128) { } else {
-        ctx.throw(400);
+        ctx.response.status = 400;
+        ctx.body = { code: 400, msg: "凭据不符合规范" };
         return;
     }
     if (["boy", "girl", "none"].includes(sex)) { } else {
-        ctx.throw(400);
+        ctx.response.status = 400;
+        ctx.body = { code: 400, msg: "不符合规范" };
         return;
     }
     ctx.body = addUser({ nickname, sex }, [{ identity_type, identifier, credential }]);
@@ -33,21 +44,25 @@ module.exports.user_register = (ctx, next) => {
 
 module.exports.user_login = (ctx, next) => {
     if (ctx.session.user_id != undefined) {
-        ctx.throw(400);
+        ctx.response.status = 400;
+        ctx.body = { code: 400, msg: "不符合规范" };
         return;
     }
     let { identity_type, identifier, credential } = ctx.request.body;
     // 现在仅限这三种，以后会添加oauth2的验证登陆功能
     if (["username", "phone", "email"].includes(identity_type)) { } else {
-        ctx.throw(400);
+        ctx.response.status = 400;
+        ctx.body = { code: 400, msg: "不符合规范" };
         return;
     }
     if (_.isString(identifier) && identifier.length <= 128) { } else {
-        ctx.throw(400);
+        ctx.response.status = 400;
+        ctx.body = { code: 400, msg: "不符合规范" };
         return;
     }
     if (_.isString(credential) && credential.length <= 128) { } else {
-        ctx.throw(400);
+        ctx.response.status = 400;
+        ctx.body = { code: 400, msg: "不符合规范" };
         return;
     }
     let res = authUser({ identity_type, identifier, credential, ip: ctx.ip });
@@ -72,7 +87,8 @@ module.exports.user_info = (ctx, next) => {
     if (_.isSafeInteger(user_id) || (_.isString(user_id) && user_id.match(/^\d+$/g) != null)) {
         user_id = parseInt(user_id);
     } else {
-        ctx.throw(400);
+        ctx.response.status = 400;
+        ctx.body = { code: 400, msg: "不符合规范" };
         return;
     }
     let { id, nickname, sex, avatar = config.defaultAvatar, status, register_date } = getUserInfo(user_id);

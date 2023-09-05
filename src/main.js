@@ -32,22 +32,33 @@ app.use(logger());
 // 只有新建的session或无登陆session才会触发
 app.use(initSession());
 
-const userRouter = require("./routes/user").routes();
-
-router.use("/api/users", userRouter);
-
+// 以后改成router引入
 if (debug) {
     router.all("/api/session/clear", (ctx, next) => {
-        ctx.session = null;
-        ctx.body = "ok";
+        ctx.session = { isNew: true };
+        ctx.body = { code: 200, msg: "ok" };
     });
     router.all("/api/session/list", (ctx, next) => {
         ctx.body = ctx.session;
     });
 }
 
+router.use((ctx, next) => {
+    if(!ctx.session.permissions.visit_site) {
+        ctx.response.status = 401;
+        ctx.body = { code: 401, msg: "您没有访问主站的权限" };
+        return;
+    }
+    next();
+});
+
+const userRouter = require("./routes/users").routes();
+
+router.use("/api/users", userRouter);
+
 // hold 404
-router.all("/:match(.*)", (ctx, next) => {
+router.use((ctx, next) => {
+    ctx.response.status = 404;
     ctx.body = { code: 404, msg: "nothing here" };
 });
 

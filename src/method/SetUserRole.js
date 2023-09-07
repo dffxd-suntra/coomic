@@ -5,6 +5,6 @@ module.exports = function setUserRole(user_id, role) {
     if (role_id == undefined) {
         return { code: 400, msg: "没有此role" };
     }
-    db.prepare("INSERT INTO relationship(type, source_id, target_id) VALUES('role' , $role_id, $user_id);").run({ user_id, role_id });
+    db.prepare("INSERT INTO user_role_relationship(user_id, role_id) VALUES($user_id, $role_id);").run({ user_id, role_id });
     return { code: 200, msg: "role添加成功" };
 }

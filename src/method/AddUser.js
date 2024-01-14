@@ -1,9 +1,9 @@
-const db = require("../library/sqlite3");
+const db = require("../utils/sqlite3");
 const addUserAuth = require("./AddUserAuth");
 const moment = require("moment");
 const setUserRole = require("./SetUserRole");
 
-module.exports = function addUser({ nickname = "机器人-" + moment().format("YYYYMMDD"), sex = "boy", avatar = null, status = 1, role = ["user"] } = {}, auth = []) {
+module.exports = function addUser({ nickname = moment().format("机器人-YYYYMMDD"), sex = "none", avatar = null, status = 1, role = ["user"] } = {}, auth = []) {
     db.prepare("BEGIN TRANSACTION").run();
     // 创建用户
     let stmt = db.prepare("INSERT INTO users(nickname, sex, avatar, status) VALUES($nickname, $sex, $avatar, $status);");

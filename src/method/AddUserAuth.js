@@ -1,4 +1,4 @@
-const db = require("../library/sqlite3");
+const db = require("../utils/sqlite3");
 const PasswordHash = require("phpass").PasswordHash;
 
 module.exports = function addUserAuth({ user_id = null, is_oauth2 = 0, identity_type = "", identifier = "", credential = "", verified = 1 } = {}) {

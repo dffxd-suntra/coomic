@@ -1,3 +1,4 @@
+// prepare
 const Http = require("http");
 const Koa = require("koa");
 const Router = require("@koa/router");
@@ -9,75 +10,83 @@ const SocketIO = require("socket.io");
 const config = require("./config/config");
 const clientip = require("koa-clientip");
 const KeyGrip = require("keygrip");
-const initSession = require("./method/InitSession");
 
+const yargs = require("yargs/yargs");
+const { hideBin } = require("yargs/helpers");
+const argv = yargs(hideBin(process.argv)).argv;
+
+const initSession = require("./method/InitSession");
 const app = new Koa();
-const router = new Router();
+const router = new Router({ prefix: "/v1/" });
 const httpServer = Http.createServer(app.callback());
 const io = new SocketIO.Server(httpServer, {});
-const debug = true;
+const debug = argv.dev == "true";
 
 app.keys = new KeyGrip(["this is my key", "this is also my key"], "sha256");
 
 app.use(bodyParser());
 app.use(Session(config.sessionConfig, app));
-app.use(cors({
+app.use(cors({ // 如无需cors请删除
     origin: "*",
     allowMethods: "*",
     allowHeaders: "*"
 }));
 app.use(clientip());
 app.use(logger());
+app
+    .use(initSession())
+    .use(router.routes())
+    .use(router.allowedMethods())
+    .use((ctx) => {// hold 404
+        ctx.response.status = 404;
+        ctx.body = { code: 404, msg: "nothing here" };
+    });
 
-// 只有新建的session或无登陆session才会触发
-app.use(initSession());
-
-// 以后改成router引入
+// website
 if (debug) {
-    router.all("/api/session/clear", (ctx, next) => {
-        ctx.session = { isNew: true };
+    console.log("DEBUG mode on.");
+    router.all("session/clear/", (ctx) => {
+        ctx.session = null;
         ctx.body = { code: 200, msg: "ok" };
     });
-    router.all("/api/session/list", (ctx, next) => {
+    router.all("session/list/", (ctx) => {
         ctx.body = ctx.session;
+    });
+    router.all("ctx/", (ctx) => {
+        console.log(ctx);
+        ctx.body = { code: 200, msg: "ok" };
+    });
+    router.all("params/:user_id(\\d{1,9})?/", (ctx) => {
+        console.log(ctx);
+        ctx.body = { code: 200, msg: "ok" };
     });
 }
 
-router.use((ctx, next) => {
-    if(!ctx.session.permissions.visit_site) {
-        ctx.response.status = 401;
-        ctx.body = { code: 401, msg: "您没有访问主站的权限" };
-        return;
-    }
-    next();
-});
-
 const userRouter = require("./routes/users").routes();
-
-router.use("/api/users", userRouter);
-
-// hold 404
-router.use((ctx, next) => {
-    ctx.response.status = 404;
-    ctx.body = { code: 404, msg: "nothing here" };
-});
-
-app
-    .use(router.routes())
-    .use(router.allowedMethods());
+router.use("users/", userRouter);
 
 // socket.io 适配 koa-session
 io.use((socket, next) => {
     let ctx = app.createContext(socket.request, new Http.OutgoingMessage());
     socket.session = ctx.session;
     console.log(socket);
-    if (socket.session.user_id == undefined) {
-        socket.emit("doLogout", { msg: "you not login" });
+    if (ctx.session.is_login != true) {
+        socket.emit("doLogout", { msg: "you must login" });
         socket.disconnect(true);
+        return;
     }
     next();
 });
 
 httpServer.listen(config.port); // default 3000
 
-console.log(`服务器开放在本地端口： ${config.port}`);
+console.log(`服务器开放在本地: http://localhost:${config.port}/`);
+
+function cleanup() {
+    console.log("应用已关闭.");
+}
+process.on("exit", cleanup);
+
+process.on("SIGINT", function () {
+    process.exit(0);
+});

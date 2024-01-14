@@ -3,9 +3,10 @@ const addUser = require("../method/AddUser");
 const _ = require("lodash");
 const authUser = require("../method/AuthUser");
 const getUserInfo = require("../method/GetUserInfo");
+const refreshUserSession = require("../method/RefreshUserSession");
 
 module.exports.user_register = (ctx, next) => {
-    if(!ctx.session.permissions.register_user) {
+    if (!ctx.session.permissions.register_user) {
         ctx.response.status = 401;
         ctx.body = { code: 401, msg: "您没有注册的权限" };
         return;
@@ -70,27 +71,49 @@ module.exports.user_login = (ctx, next) => {
         ctx.session.user_id = res.data.user_id;
         ctx.session.login_date = Date.now();
         ctx.session.is_login = true;
+        refreshUserSession(ctx.session);
     }
-    let { id, nickname, sex, avatar = config.defaultAvatar, status, register_date } = getUserInfo(ctx.session.user_id);
-    res.data = { id, nickname, sex, avatar, status, register_date };
-    ctx.body = res;
+    ctx.body = session.data;
 };
 
 // 登出的除了用户还有使用
 module.exports.user_logout = (ctx, next) => {
-    ctx.session = { isNew: true };
+    ctx.session = null;
     ctx.body = { code: 200, msg: "您已退出登录" };
 };
 
 module.exports.user_info = (ctx, next) => {
-    let { user_id = ctx.session.user_id } = ctx.request.body;
-    if (_.isSafeInteger(user_id) || (_.isString(user_id) && user_id.match(/^\d+$/g) != null)) {
-        user_id = parseInt(user_id);
-    } else {
-        ctx.response.status = 400;
-        ctx.body = { code: 400, msg: "不符合规范" };
+    if (ctx.session.permissions.discover_site) {
+        ctx.response.status = 401;
+        ctx.body = { code: 401, msg: "您没有权限访问" };
         return;
     }
-    let { id, nickname, sex, avatar = config.defaultAvatar, status, register_date } = getUserInfo(user_id);
-    ctx.body = { id, nickname, sex, avatar, status, register_date };
+    console.log(ctx);
+    let user_id = ctx.params.user_id || null;
+    if (user_id == null) {
+        if (ctx.session.is_login) {
+            user_id = ctx.session.user_id;
+        } else {
+            ctx.response.status = 400;
+            ctx.body = { code: 400, msg: "不符合规范" };
+            return;
+        }
+    } else {
+        user_id = +user_id;
+    }
+
+    if (user_id == ctx.session.user_id) {
+        ctx.body = ctx.session.data;
+    } else {
+        let { id, nickname, sex, avatar = config.defaultAvatar, status, register_date } = getUserInfo(ctx.session.user_id);
+        ctx.body = { id, nickname, sex, avatar, status, register_date };
+    }
+};
+
+module.exports.user_info_update = (ctx, next) => {
+    if (ctx.session.is_login || ctx.session.user_id != ctx.params.user_id) {
+        ctx.response.status = 401;
+        ctx.body = { code: 401, msg: "您没有权限访问" };
+        return;
+    }
 };

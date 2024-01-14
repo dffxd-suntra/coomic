@@ -1,4 +1,4 @@
-const db = require("../library/sqlite3");
+const db = require("../utils/sqlite3");
 const getRole = require("./GetRole");
 const getUserRoles = require("./GetUserRoles");
 

@@ -1,4 +1,4 @@
-const db = require("../library/sqlite3");
+const db = require("../utils/sqlite3");
 
 module.exports = function setUserRole(user_id, role) {
     let { id: role_id } = db.prepare("SELECT id FROM roles WHERE name = $role;").get({ role }) || {};

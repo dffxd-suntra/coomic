@@ -1,41 +1,42 @@
 {
-  "name": "coomic",
-  "version": "0.0.1",
-  "description": "very cool comic site",
-  "main": "src/main.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/main.js",
-    "dev": "nodemon src/main.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/dffxd-suntra/coomic.git"
-  },
-  "author": "dffxd-suntra",
-  "license": "GPL-3.0",
-  "bugs": {
-    "url": "https://github.com/dffxd-suntra/coomic/issues"
-  },
-  "homepage": "https://github.com/dffxd-suntra/coomic#readme",
-  "dependencies": {
-    "@koa/cors": "^4.0.0",
-    "@koa/router": "^12.0.0",
-    "better-sqlite3": "^8.5.2",
-    "keygrip": "^1.1.0",
-    "koa": "^2.14.2",
-    "koa-bodyparser": "^4.4.1",
-    "koa-clientip": "^1.1.1",
-    "koa-logger": "^3.2.1",
-    "koa-session": "^6.4.0",
-    "koa-static": "^5.0.0",
-    "lodash": "^4.17.21",
-    "memory-cache": "^0.2.0",
-    "moment": "^2.29.4",
-    "phpass": "^0.1.1",
-    "socket.io": "^4.7.2"
-  },
-  "devDependencies": {
-    "nodemon": "^3.0.1"
-  }
+    "name": "coomic",
+    "version": "0.0.1",
+    "description": "very cool comic site",
+    "main": "src/main.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "node src/main.js",
+        "dev": "nodemon --inspect=9229 src/main.js --dev=true"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/dffxd-suntra/coomic.git"
+    },
+    "author": "dffxd-suntra",
+    "license": "GPL-3.0",
+    "bugs": {
+        "url": "https://github.com/dffxd-suntra/coomic/issues"
+    },
+    "homepage": "https://github.com/dffxd-suntra/coomic#readme",
+    "dependencies": {
+        "@koa/cors": "^4.0.0",
+        "@koa/router": "^12.0.0",
+        "better-sqlite3": "^8.5.2",
+        "keygrip": "^1.1.0",
+        "koa": "^2.14.2",
+        "koa-bodyparser": "^4.4.1",
+        "koa-clientip": "^1.1.1",
+        "koa-logger": "^3.2.1",
+        "koa-session": "^6.4.0",
+        "koa-static": "^5.0.0",
+        "lodash": "^4.17.21",
+        "memory-cache": "^0.2.0",
+        "moment": "^2.29.4",
+        "phpass": "^0.1.1",
+        "socket.io": "^4.7.2",
+        "yargs": "^17.7.2"
+    },
+    "devDependencies": {
+        "nodemon": "^3.0.1"
+    }
 }

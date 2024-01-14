@@ -1,4 +1,4 @@
-const db = require("../library/sqlite3");
+const db = require("../utils/sqlite3");
 const config = require("../config/config");
 
 module.exports = function getUserInfo(user_id) {

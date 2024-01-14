@@ -1,0 +1,24 @@
+{
+    "openapi": "3.0.2",
+    "info": {
+        "title": "Coomic API",
+        "description": "coomic后端api",
+        "license": {
+            "name": "GPL-3.0",
+            "url": "https://github.com/dffxd-suntra/coomic?tab=GPL-3.0-1-ov-file#readme"
+        },
+        "contact": {
+            "name": "dffxd-suntra",
+            "url": "https://github.com/dffxd-suntra"
+        },
+        "version": "1.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:7789/v1/",
+            "description": "本地服务器(偷偷告诉你,这是用质数生成器随便挑的端口号)"
+        }
+    ],
+    "paths": {
+    }
+}

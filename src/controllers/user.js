@@ -4,6 +4,7 @@ const _ = require("lodash");
 const authUser = require("../method/AuthUser");
 const getUserInfo = require("../method/GetUserInfo");
 const refreshUserSession = require("../method/RefreshUserSession");
+const validator = require("../utils/validator");
 
 module.exports.user_register = (ctx, next) => {
     if (!ctx.session.permissions.register_user) {
@@ -15,55 +16,36 @@ module.exports.user_register = (ctx, next) => {
     // 坏的用户，不干好事，天天就想搞我的网站
     let { nickname, identity_type, identifier, credential, sex } = ctx.request.body;
     // 判定
-    if (_.isString(nickname) && 1 <= nickname.length && nickname.length <= 20) { } else {
+    if (!validator.nickname(nickname)) {
         ctx.response.status = 400;
         ctx.body = { code: 400, msg: "昵称不符合规范" };
         return;
     }
-    if (["username", "phone", "email"].includes(identity_type)) { } else {
-        ctx.response.status = 400;
-        ctx.body = { code: 400, msg: "验证方式不符合规范" };
-        return;
-    }
-    if (_.isString(identifier) && identifier.length <= 128) { } else {
-        ctx.response.status = 400;
-        ctx.body = { code: 400, msg: "标识不符合规范" };
-        return;
-    }
-    if (_.isString(credential) && credential.length <= 128) { } else {
+    if (!validator.identifier(identity_type, identifier, credential)) {
         ctx.response.status = 400;
         ctx.body = { code: 400, msg: "凭据不符合规范" };
         return;
     }
-    if (["boy", "girl", "none"].includes(sex)) { } else {
+    if (validator.sex(sex)) {
         ctx.response.status = 400;
-        ctx.body = { code: 400, msg: "不符合规范" };
+        ctx.body = { code: 400, msg: "非常抱歉，我尊重所有人对于自己性别的看法，但还是请使用主流性别！！！" };
         return;
     }
     ctx.body = addUser({ nickname, sex }, [{ identity_type, identifier, credential }]);
 };
 
 module.exports.user_login = (ctx, next) => {
-    if (ctx.session.user_id != undefined) {
+    if (ctx.session.is_login) {
         ctx.response.status = 400;
-        ctx.body = { code: 400, msg: "不符合规范" };
+        ctx.body = { code: 400, msg: "请先退出登录" };
         return;
     }
+
     let { identity_type, identifier, credential } = ctx.request.body;
     // 现在仅限这三种，以后会添加oauth2的验证登陆功能
-    if (["username", "phone", "email"].includes(identity_type)) { } else {
+    if (!validator.identifier(identity_type, identifier, credential)) {
         ctx.response.status = 400;
-        ctx.body = { code: 400, msg: "不符合规范" };
-        return;
-    }
-    if (_.isString(identifier) && identifier.length <= 128) { } else {
-        ctx.response.status = 400;
-        ctx.body = { code: 400, msg: "不符合规范" };
-        return;
-    }
-    if (_.isString(credential) && credential.length <= 128) { } else {
-        ctx.response.status = 400;
-        ctx.body = { code: 400, msg: "不符合规范" };
+        ctx.body = { code: 400, msg: "凭据不符合规范" };
         return;
     }
     let res = authUser({ identity_type, identifier, credential, ip: ctx.ip });
@@ -102,11 +84,12 @@ module.exports.user_info = (ctx, next) => {
         user_id = +user_id;
     }
 
+    ctx.body = { code: 200, msg: "成功", data: {} };
     if (user_id == ctx.session.user_id) {
-        ctx.body = ctx.session.data;
+        ctx.body.data = _.cloneDeep(ctx.session.data);
     } else {
         let { id, nickname, sex, avatar = config.defaultAvatar, status, register_date } = getUserInfo(ctx.session.user_id);
-        ctx.body = { id, nickname, sex, avatar, status, register_date };
+        ctx.body.data = { id, nickname, sex, avatar, status, register_date };
     }
 };
 

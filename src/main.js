@@ -20,31 +20,27 @@ const app = new Koa();
 const router = new Router({ prefix: "/v1/" });
 const httpServer = Http.createServer(app.callback());
 const io = new SocketIO.Server(httpServer, {});
-const debug = argv.dev == "true";
+const debug = (argv.dev == "true");
 
 app.keys = new KeyGrip(["this is my key", "this is also my key"], "sha256");
 
 app.use(bodyParser());
 app.use(Session(config.sessionConfig, app));
-app.use(cors({ // 如无需cors请删除
-    origin: "*",
-    allowMethods: "*",
-    allowHeaders: "*"
-}));
+app.use(cors(config.corsConfig));
 app.use(clientip());
 app.use(logger());
 app
     .use(initSession())
     .use(router.routes())
     .use(router.allowedMethods())
-    .use((ctx) => {// hold 404
+    .use((ctx) => { // hold 404
         ctx.response.status = 404;
         ctx.body = { code: 404, msg: "nothing here" };
     });
 
 // website
 if (debug) {
-    console.log("DEBUG mode on.");
+    console.log("DEBUG mode: true.");
     router.all("session/clear/", (ctx) => {
         ctx.session = null;
         ctx.body = { code: 200, msg: "ok" };
@@ -82,11 +78,13 @@ httpServer.listen(config.port); // default 3000
 
 console.log(`服务器开放在本地: http://localhost:${config.port}/`);
 
+
 function cleanup() {
+    // 服务器结束处理开始
+    // 服务器结束处理结束
     console.log("应用已关闭.");
 }
 process.on("exit", cleanup);
-
 process.on("SIGINT", function () {
     process.exit(0);
 });

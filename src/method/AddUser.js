@@ -1,4 +1,4 @@
-const db = require("../utils/sqlite3");
+const db = require("../utils/knex");
 const addUserAuth = require("./AddUserAuth");
 const moment = require("moment");
 const setUserRole = require("./SetUserRole");

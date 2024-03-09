@@ -1,83 +1,94 @@
-> 2024正在开发
+> 2024年7月后将继续开发  
+> 状态：未开发完成  
+> 将会将数据库再次重构，以使用最简便的方法实现全部功能  
 
 # coomic 后端
 
-very cool comic site  
-虽然叫coomic,但是支持小说和其他媒体  
-  
-技术细节：  
+## 前言
+起名的哲学：comic + cool = coomic  
+定义：是一个私密的媒体(image,audio,video)服务器，可以用于中小规模本地媒体共享  
+主要就是在融入新技术、新想法的同时，保证用户安装方便，易于管理，用户端界面响应快、占用小。
+代码易读性与简洁性向Typecho看齐。  
+不会以任何方式在网站里添加积分，等级以及收费功能。  
+
+## 技术细节
 前端：  
-vite + lithtml + socketio  
-无路由，single page.  
+- 框架：vite + lithtml
 
 后端：  
-nodejs + koajs + socketio + sqlite3  
+- 运行时：nodejs
+- 框架：koajs
+- 数据库：sqlite3
 
-## 特性：
-- 简单
-- 支持文字和媒体（图片，视频，音频）
-- 支持可扩展多方式登陆（oauth。。。）
+使用http与socketio双通讯方式，数据格式使用google发布的protobuf。
+
+## 特点：
+- 配置简单*
+- 响应迅速
+- 用户端数据实时同步（socketio）
+- 反爬（学过protobuf的人少 + socketio用户状态监控）
+- 可扩展多方式登陆（oauth,phone number,email,username）
 - 前后端分离
-
-## 介绍：
-借鉴了exhentai,以及NoyAcg!  
-定位为个人媒体浏览器，主要考虑的是舒适性，不会为了性能而在舒适性上作出妥协，故对防盗没有限制  
-开源软件安全性有保证，不会盗取私人信息，所有密码都为哈希加盐，网站的漏洞我已经尽我所能的避免  
-  
-网站我在设计时遵守的的主旨就是安装简单，设置简单，无副作用，电脑上需要配置的仅有nodejs和npm，删除时一齐删除即可，后续会尝试使用pkg打包继续简化安装。
+- 可设置私密媒体，密码保护
   
 ## TODO ~~(大饼)~~ :
-- [ ] user
+- [ ] 后台 单独的api接口与单独的前端，与所有TODO并列执行
+- [ ] user 用户
+  - [x] role 用户组（权限管理
+    - [x] add
+    - [x] update
+    - [x] delete
+  - [x] auth 用户验证方式
+    - [x] add
+    - [x] update
+    - [x] delete
   - [x] login
   - [x] register
   - [ ] update
-- [ ] tags
+- [ ] tags 标签
   - [ ] add
   - [ ] update
-- [ ] gallery
+- [ ] gallery 画廊
   - [ ] media
     - [ ] add
     - [ ] delete
   - [ ] add
   - [ ] update
   - [ ] delete
-- [ ] novel (这个和漫画完全不是一个东西，和媒体系统是分开的，最后做)
-  - [ ] online editor
+- [ ] comments 评论
   - [ ] add
   - [ ] update
   - [ ] delete
-- [ ] comments
+- [ ] history 历史记录
   - [ ] add
-  - [ ] update
-  - [ ] delete
-- [ ] history
-  - [ ] add
-- [ ] collect
+  - [ ] remove
+  - [ ] clear
+- [ ] collect 合集，默认收藏夹合集不可删除
   - [ ] add collect
   - [ ] delete collect
   - [ ] update collect
     - [ ] change name
     - [ ] add gallery
     - [ ] delete gallery
-- [ ] vote
+- [ ] vote 投票，模仿stackoverflow
   - [ ] gallery
   - [ ] comments
-- [ ] rank 不用redis的持久性缓存很让我头疼啊（解法：分表，每天一个，零点统一计算
+- [ ] rank 排行榜
   - [ ] click(day,week,month,year,total)
   - [ ] favorite(day,week,month,year,total)
-- [ ] search
-- [ ] recommended system 零点统一计算
-- [ ] pkg
-- [ ] extension：参考userscript
+- [ ] search 搜索功能 对标知网
+- [ ] recommended system 推荐系统 对标twitter
+- [ ] extension 参考userscript 可以对网站一小部分底层逻辑作出修改
   - [ ] parse
   - [ ] api
   - [ ] support typescript
+- [ ] pkg 多平台打包 无需依赖 大概率不做
 
 
-小笔记：
-用户状态：
-0：正常（活跃）
-1：不活跃（不访问网站3天，主页变灰色，有悼词，有特效，再次登陆可返回活跃状态）
-2：封禁（政治立场不正确，显示封禁，不可登陆）
-3：注销中（用户手动注销，主页无任何变化，不可登陆，但是网站保留个人信息40天啊，可联系管理员撤回）
-4：归档（只读，显示已注销，不可登陆）
+小笔记：  
+用户状态：  
+0：正常（活跃）  
+1：不活跃（不登陆网站的第3天，主页变灰色，有悼词，有特效，再次登陆可返回活跃状态，不活跃180天后自动注销（可关闭））  
+2：封禁（政治立场不正确，显示封禁，不可登陆）  
+3：注销中（用户手动注销或自动注销，只读，主页无任何变化，不可登陆，网站保留个人信息40天，可联系管理员撤回）  
+4：归档（只读，显示已注销，释放所有登陆方式）  
